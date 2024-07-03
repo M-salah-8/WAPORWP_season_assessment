@@ -5,13 +5,14 @@ import rasterio.mask
 import matplotlib.patches as patches
 import numpy as np
 
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib import pyplot as plt
-# change the directory to where the modules are saved
 
 class Maps():
   def __init__(self):
     self.master_dr = os.path.split(os.getcwd())[0]
     self.maps_dr = os.path.join(self.master_dr, "Data/maps")
+    os.makedirs(self.maps_dr, exist_ok=True)
     self.charts_dr = os.path.join(self.master_dr, "Data/charts")
     os.makedirs(self.charts_dr, exist_ok=True)
     self.map_meta = {
@@ -122,7 +123,7 @@ class Maps():
       },
       }
     
-  def draw_north_arrow(self, ax, arrow_scale):
+  def draw_north_arrow(self, ax, arrow_scale, l_w, f_s):
     ax.set_aspect('equal', adjustable='box')
     ax_length = ax.get_xlim()[1]-ax.get_xlim()[0]
     shape_length = ax_length * arrow_scale
@@ -138,11 +139,11 @@ class Maps():
     x_bottom_right, y_bottom_right = base_end, height_start
     x_mid, y_mid = width / 2 + base_start, height / 4 + height_start
     polygon = patches.Polygon([[x_bottom_left, y_bottom_left], [x_top, y_top], [x_bottom_right, y_bottom_right],[x_mid,y_mid]],
-                                facecolor= 'goldenrod', edgecolor= 'black', linewidth= shape_length*3)
+                                facecolor= 'goldenrod', edgecolor= 'black', linewidth= l_w)
     ax.add_patch(polygon)    
     text_x = width / 2 + base_start
     text_y = height / 2.2 + height_start
-    ax.text(text_x, text_y, 'N', ha='center', va='center', fontsize=shape_length*20, fontweight='bold', color= 'black')
+    ax.text(text_x, text_y, 'N', ha='center', va='center', fontsize=f_s, fontweight='bold', color= 'black')
     ax.set_axis_off()
 
   def main_map(self, gdf, id_column):
@@ -169,7 +170,8 @@ class Maps():
     map.set_xlabel('Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
     map.set_ylabel('Latitude ($^{\circ}$ North)', fontsize=14)
     map.set_title(r'Field ID/name', fontsize=16, loc='center')
-    self.draw_north_arraw(map, 0.1, 0.05)
+    arrow_ax = inset_axes(map, width="10%", height="10%", loc=3)
+    self.draw_north_arrow(arrow_ax, 0.9, 1.5, 9)
     map.grid()
     plt.savefig(os.path.join(self.maps_dr, "main_map.png"))
 
@@ -208,7 +210,7 @@ class Maps():
       axs['map'].set_xlabel('Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
       axs['map'].set_ylabel('Latitude ($^{\circ}$ North)', fontsize=14)
       axs['map'].set_title(self.map_meta[data_name]['title'], fontsize=14, loc='center', pad= 10)
-      self.draw_north_arrow(axs['north_arrow'], 0.5)
+      self.draw_north_arrow(axs['north_arrow'], 0.5, 2, 15)
       axs['map'].grid()
       gdf.plot(
         ax= axs['by_area'], column= data_name,

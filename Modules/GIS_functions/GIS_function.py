@@ -9,6 +9,8 @@ from osgeo import gdal
 from osgeo import osr
 import os
 
+gdal.UseExceptions()
+
 def GetGeoInfo(fh, subdataset = 0):
     """
     Substract metadata from a geotiff, HDF4 or netCDF file.

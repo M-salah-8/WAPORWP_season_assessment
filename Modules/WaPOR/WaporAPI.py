@@ -23,7 +23,7 @@ class __WaPOR_API_class(object):
         self.path_jobs=r'https://io.apps.fao.org/gismgr/api/v1/catalog/workspaces/WAPOR/jobs/'
         self.workspaces={2: 'WAPOR_2'}
         self.version=2    
-        self.cached_catalog={2: os.path.join(os.path.dirname(__file__),'catalog_2.pickle')}
+        self.cached_catalog={2: os.path.join(os.path.dirname(__file__),'catalog_2.pkl')}
         self.APIToken=APIToken
         self.print_job=False #True to print all requests responses                    
         self.AccessToken=self._query_accessToken()        

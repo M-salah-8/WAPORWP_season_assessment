@@ -1,5 +1,6 @@
 import os
-import geopandas as gpd
+from matplotlib.patches import Rectangle
+import matplotlib.lines as mlines
 import rasterio
 import rasterio.mask
 import matplotlib.patches as patches
@@ -9,7 +10,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from matplotlib import pyplot as plt
 
 class Maps():
-  def __init__(self):
+  def __init__(self, period):
     self.master_dr = os.path.split(os.getcwd())[0]
     self.maps_dr = os.path.join(self.master_dr, "Data/maps")
     os.makedirs(self.maps_dr, exist_ok=True)
@@ -47,28 +48,28 @@ class Maps():
         'cmap': 'Reds',
       },
       'aeti': {
-        'title': 'Actual evapotranspiration [mm/season]',
-        'cbar_lable': 'ETa [mm/season]',
+        'title': f'Actual evapotranspiration [mm/{period}]',
+        'cbar_lable': f'ETa [mm/{period}]',
         'cmap': 'jet_r',
       },
       't': {
-        'title': 'Transpiration [mm/season]',
-        'cbar_lable': 'T [mm/season]',
+        'title': f'Transpiration [mm/{period}]',
+        'cbar_lable': f'T [mm/{period}]',
         'cmap': 'jet_r',
       },
       'ret': {
-        'title': 'Reference evapotranspiration [mm/season]',
-        'cbar_lable': 'REF [mm/season]',
+        'title': f'Reference evapotranspiration [mm/{period}]',
+        'cbar_lable': f'REF [mm/{period}]',
         'cmap': 'jet_r',
       },
       'pcp': {
-        'title': 'precipitation [mm/season]',
-        'cbar_lable': 'precipitation [mm/season]',
+        'title': f'precipitation [mm/{period}]',
+        'cbar_lable': f'precipitation [mm/{period}]',
         'cmap': 'jet_r',
       },
       'npp': {
-        'title': 'Net primary production [gC/m2/season]',
-        'cbar_lable': 'NPP [gC/m2/season]',
+        'title': f'Net primary production [gC/m2/{period}]',
+        'cbar_lable': f'NPP [gC/m2/{period}]',
         'cmap': 'jet_r',
       },
       'bf': {
@@ -82,13 +83,13 @@ class Maps():
         'cmap': 'RdYlGn',
       },
       'biomass': {
-        'title': 'Above ground biomass [ton/ha/season]',
-        'cbar_lable': 'Above ground biomass [ton/ha/season]',
+        'title': f'Above ground biomass [ton/ha/{period}]',
+        'cbar_lable': f'Above ground biomass [ton/ha/{period}]',
         'cmap': 'RdYlGn',
       },
       'yield': {
-        'title': 'Crop yield [ton/ha/season]',
-        'cbar_lable': 'Crop yield [ton/ha/season]',
+        'title': f'Crop yield [ton/ha/{period}]',
+        'cbar_lable': f'Crop yield [ton/ha/{period}]',
         'cmap': 'RdYlGn',
       },
       'wpb': {
@@ -102,23 +103,23 @@ class Maps():
         'cmap': 'RdYlGn',
       },
       'biomassgap': {
-        'title': 'Biomass gaps [ton/ha/season]',
-        'cbar_lable': 'Biomass gaps [ton/ha/season]',
+        'title': f'Biomass gaps [ton/ha/{period}]',
+        'cbar_lable': f'Biomass gaps [ton/ha/{period}]',
         'cmap': 'RdYlGn',
       },
       'wpbgap': {
-        'title': 'Biomass WP gaps [m3/season]',
-        'cbar_lable': 'Biomass WP gaps [m3/season]',
+        'title': f'Biomass WP gaps [m3/{period}]',
+        'cbar_lable': f'Biomass WP gaps [m3/{period}]',
         'cmap': 'RdYlGn',
       },
       'yieldgap': {
-        'title': 'crop yield gaps [ton/ha/season]',
-        'cbar_lable': 'crop yield gaps [ton/ha/season]',
+        'title': f'crop yield gaps [ton/ha/{period}]',
+        'cbar_lable': f'crop yield gaps [ton/ha/{period}]',
         'cmap': 'RdYlGn',
       },
       'wpygap': {
-        'title': 'crop WP gaps [m3/season]',
-        'cbar_lable': 'crop WP gaps [m3/season]',
+        'title': f'crop WP gaps [m3/{period}]',
+        'cbar_lable': f'crop WP gaps [m3/{period}]',
         'cmap': 'RdYlGn',
       },
       }
@@ -167,13 +168,15 @@ class Maps():
     x1,x2,x3 = xb + x*2/8, xb + x*4/8, xb + x*6/8
     map.set_yticks([y1,y2,y3],[f"{y1:.2f}",f"{y2:.2f}",f"{y3:.2f}"])
     map.set_xticks([x1,x2,x3],[f"{x1:.2f}",f"{x2:.2f}",f"{x3:.2f}"])
-    map.set_xlabel('Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
-    map.set_ylabel('Latitude ($^{\circ}$ North)', fontsize=14)
+    map.set_xlabel(r'Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
+    map.set_ylabel(r'Latitude ($^{\circ}$ North)', fontsize=14)
     map.set_title(r'Field ID/name', fontsize=16, loc='center')
     arrow_ax = inset_axes(map, width="10%", height="10%", loc=3)
     self.draw_north_arrow(arrow_ax, 0.9, 1.5, 9)
     map.grid()
     plt.savefig(os.path.join(self.maps_dr, "main_map.png"))
+    plt.show()
+    plt.close()
 
   def data_maps(self, tifs, gdf, tifs_dr):
     for tif in tifs:
@@ -207,8 +210,8 @@ class Maps():
       axs['map'].set_yticks([y1,y2,y3],[f"{y1:.2f}",f"{y2:.2f}",f"{y3:.2f}"])
       axs['map'].set_xticks([x1,x2,x3],[f"{x1:.2f}",f"{x2:.2f}",f"{x3:.2f}"])
       axs['map'].tick_params(axis='y', rotation=90)
-      axs['map'].set_xlabel('Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
-      axs['map'].set_ylabel('Latitude ($^{\circ}$ North)', fontsize=14)
+      axs['map'].set_xlabel(r'Longitude ($^{\circ}$ East)', fontsize=14)  # add axes label
+      axs['map'].set_ylabel(r'Latitude ($^{\circ}$ North)', fontsize=14)
       axs['map'].set_title(self.map_meta[data_name]['title'], fontsize=14, loc='center', pad= 10)
       self.draw_north_arrow(axs['north_arrow'], 0.5, 2, 15)
       axs['map'].grid()
@@ -221,6 +224,8 @@ class Maps():
       axs['by_area'].set_yticks([])
       axs['by_area'].set_title('By Area', fontsize=10, loc='center')
       plt.savefig(os.path.join(tifs_dr, f"{data_name}.png"))
+      plt.show()
+      plt.close()
 
   def data_bar_charts(self, gdf, columns, id_column, c_dr):
     data_charts_dr = os.path.join(self.charts_dr,f'{c_dr}/by data')
@@ -237,6 +242,7 @@ class Maps():
       plt.grid(axis='y', color='black', linestyle= '--')
       plt.savefig(os.path.join(data_charts_dr, f"{column}.png"))
       plt.show()
+      plt.close()
 
   def area_bar_charts(self, gdf, max_data, c_dr):
     area_charts_dr = os.path.join(self.charts_dr,f'{c_dr}/by area')
@@ -246,8 +252,8 @@ class Maps():
     else:
       gdf = gdf.drop(['geometry'],axis= 1)
     for _,row in gdf.iterrows():
-      name = row[0]
-      ratios = row[1:]/max_data * 100
+      name = row.iloc[0]
+      ratios = row.iloc[1:]/max_data * 100
       _, ax = plt.subplots(layout= 'constrained')
       ratios.plot.bar(ax=ax)
       ax.set_ylabel("percentage from max")
@@ -255,9 +261,9 @@ class Maps():
       ax.set_title(f'Area {name}', pad=10, fontsize= 20, weight= 'bold')
       ax.set_ybound(upper=130)
       for idx, p in enumerate(ax.patches):
-        if np.isnan(max_data[idx]):
+        if np.isnan(max_data.iloc[idx]):
           continue
-        bar_max = round(max_data[idx],2)
+        bar_max = round(max_data.iloc[idx],2)
         height = p.get_height()
         # print(height)
         ax.text(p.get_x()+p.get_width()/2.,
@@ -277,3 +283,54 @@ class Maps():
                 backgroundcolor= 'yellow',
                 ha= "center")
       plt.savefig(os.path.join(area_charts_dr, f"{name}.png"))
+      plt.show()
+      plt.close()
+
+  def plotProductivityTargets (self, x, y, WP, title1,xlable1,ylable1,title2,xlable2,ylable2): 
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(12, 4))
+
+    ax1.scatter(y,
+                WP,
+                marker='*',color="grey")
+
+    ax1.scatter(np.nanpercentile(y, 95),
+                np.nanpercentile(WP, 95),
+                marker='*', color='black', s=100)
+
+    ax1.axvline(np.nanpercentile(y, 95),
+                color="#EE6666", linestyle="--")
+    
+    ax1.axhline(np.nanpercentile(WP, 95),
+                color="#EE6666", linestyle="--")    
+    
+    # ax2 for histogram
+    counts, bins, patches = ax2.hist(WP, bins=100, facecolor='skyblue', edgecolor='none', histtype="bar")
+
+    # add legend 
+    fakeLine = plt.Line2D([0,0], [0,1], color="#EE6666", linestyle='--')
+    fakemark = mlines.Line2D([], [], color='black', marker='*', markersize=10)
+    ax2.legend([fakeLine, fakemark], ["95 percentile", 'Productivity target'])
+
+    # Colours for different percentiles of the histogram
+    twentyfifth, ninetyfifth = np.nanpercentile(WP, [5, 95])
+    for patch, leftside, rightside in zip(patches, bins[:-1], bins[1:]):
+        if rightside < twentyfifth:
+            patch.set_facecolor('#EE6666')
+        elif leftside > ninetyfifth:
+            patch.set_facecolor('green')
+
+    # create legend
+    handles = [Rectangle((0, 0), 1, 1, color=c, ec="k") for c in ['#EE6666', 'green']]
+    labels = ["0-5 Percentile",">95 Percentile"]
+    plt.legend(handles, labels)
+
+    # Title  
+    ax1.set_title(title1, fontsize=14)
+    ax1.set_xlabel(xlable1, fontsize=13)
+    ax1.set_ylabel(ylable1, fontsize=13)
+
+    ax2.set_title(title2, fontsize=14)
+    ax2.set_xlabel(xlable2, fontsize=13)
+    ax2.set_ylabel(ylable2, fontsize=13)
+
+    return None 

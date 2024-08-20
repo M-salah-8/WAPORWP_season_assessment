@@ -33,7 +33,7 @@ __version__ = '0.1'
 # initiate class for .his-files
 
 api_token_pickle=os.path.join(os.path.dirname(__file__),
-                              'wapor_api_token.pickle')
+                              'wapor_api_token.pkl')
 
 if not os.path.exists(api_token_pickle):
     wapor_api_token=input('Insert WAPOR API Token: ')
